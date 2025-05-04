@@ -129,5 +129,26 @@ public class KafkaConsumerTest {
 ```
 Received message: key = null, value = your_message, partition = 0, offset = 3  
 Received message: key = null, value = your_message, partition = 0, offset = 4
+
+## 面试题
+1. 零拷贝  
+    利用了DMA<sup>[1]</sup>机制，能让网卡直接访问内存中的数据。  
+    发送数据时，不需要通过cpu调度，避免了数据从  
+    内核态(read_buffer)->用户态->内核态(socket buffer)->网卡的多次复制。  
+    ![img_4.png](img_4.png)
+
 ## 参考资料
+[1] DMA，全称叫Direct Memory Access，一种可让某些硬件子系统去直接访问系统主内存，而不用依赖CPU的计算机系统的功能。 跳过CPU，直接访问主内存。
+<center>
+    <img style="border-radius: 0.3125em;
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" 
+    src="img_5.png">
+    <br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">传统的文件拷贝</div>
+</center>
+
+
 [kafka是什么--小白debug](https://mp.weixin.qq.com/s/SNMmCMV-gqkHtWS0Ca3j4g)
