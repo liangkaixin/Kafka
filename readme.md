@@ -130,6 +130,54 @@ public class KafkaConsumerTest {
 Received message: key = null, value = your_message, partition = 0, offset = 3  
 Received message: key = null, value = your_message, partition = 0, offset = 4
 
+## Kafka + bend-ingest
+![img_7.png](bend_ingest架构图.png)
+1. docker 搭建kafka集群
+    ```shell
+    docker rm -f kafka && docker run -d --name kafka -p 9092:9092 -e KAFKA_ENABLE_KRAFT=yes -e KAFKA_CFG_NODE_ID=1 -e KAFKA_CFG_PROCESS_ROLES=broker,controller -e KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER -e KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093 -e KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT -e KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092 -e KAFKA_BROKER_ID=1 -e KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@localhost:9093 -e ALLOW_PLAINTEXT_LISTENER=yes bitnami/kafka:3.5.1
+    ```
+   步骤 2：创建 Topic 并生产消息
+    创建一个名为 topic 的新 Kafka topic：
+    ```shell
+   kafka-console-producer --bootstrap-server localhost:9092 --topic test
+   ```
+   输入JSON格式的消息
+   ```shell
+    {"id": 1, "name": "Alice", "age": 30}
+    {"id": 2, "name": "Bob", "age": 25}
+    ```
+   消费者
+    ```shell
+    kafka-console-consumer --bootstrap-server localhost:9092 --topic test --from-beginning    
+    ```
+2. 安装bend-ingest, 配置写入config/conf.json
+   ```sh
+    go install  github.com/databendcloud/bend-ingest-kafka@latest
+    ```
+   ```
+    {
+    "kafkaBootstrapServers": "localhost:9092",
+    "kafkaTopic": "test",
+    "KafkaConsumerGroup": "test",
+    "isJsonTransform": false,
+    "databendDSN": "databend://ENGINEERPIPELINE:rDxRFskx3ouu9aNGo2Um@tn9tdlpwf--bigdata-ta-event-cdc-xsmall-prod.gw.aws-us-east-1.aviagames.databend.com:443/production_ta_event?warehouse=bigdata-ta-event-cdc-xsmall-prod",
+    "databendTable": "poc.kfk_test",
+    "batchSize": 100000,
+    "batchMaxInterval": 5,
+    "dataFormat": "json",
+    "workers": 1,
+    "copyPurge": false,
+    "copyForce": false,
+    "MaxBytes": 100000000
+    }       
+   ```
+3. 启动bend-ingest 消费kafka的数据，自动落表
+    ```shell
+    ./bend-ingest-kafka
+    ```
+
+
+
 ## 面试题
 1. 零拷贝  
     利用了DMA<sup>[1]</sup>机制，能让网卡直接访问内存中的数据。  
@@ -152,3 +200,4 @@ Received message: key = null, value = your_message, partition = 0, offset = 4
 
 
 [kafka是什么--小白debug](https://mp.weixin.qq.com/s/SNMmCMV-gqkHtWS0Ca3j4g)
+[bend-ingest 项目代码](https://github.com/databendcloud/bend-ingest-kafka)
