@@ -133,6 +133,13 @@ Received message: key = null, value = your_message, partition = 0, offset = 4
 ## Kafka + bend-ingest
 ![img_7.png](bend_ingest架构图.png)
 1. docker 搭建kafka集群
+   
+    1） 先启动Docker Daemon  
+   ```shell
+    open -a Docker
+   ```
+   
+   2）运行镜像  
     ```shell
     docker rm -f kafka && docker run -d --name kafka -p 9092:9092 -e KAFKA_ENABLE_KRAFT=yes -e KAFKA_CFG_NODE_ID=1 -e KAFKA_CFG_PROCESS_ROLES=broker,controller -e KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER -e KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093 -e KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT -e KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092 -e KAFKA_BROKER_ID=1 -e KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@localhost:9093 -e ALLOW_PLAINTEXT_LISTENER=yes bitnami/kafka:3.5.1
     ```
@@ -150,7 +157,7 @@ Received message: key = null, value = your_message, partition = 0, offset = 4
     ```shell
     kafka-console-consumer --bootstrap-server localhost:9092 --topic test --from-beginning    
     ```
-2. 安装bend-ingest, 配置写入config/conf.json
+3. 安装bend-ingest, 配置写入config/conf.json
    ```sh
     go install  github.com/databendcloud/bend-ingest-kafka@latest
     ```
@@ -171,7 +178,7 @@ Received message: key = null, value = your_message, partition = 0, offset = 4
     "MaxBytes": 100000000
     }       
    ```
-3. 启动bend-ingest 消费kafka的数据，自动落表
+4. 启动bend-ingest 消费kafka的数据，自动落表
     ```shell
     ./bend-ingest-kafka
     ```
